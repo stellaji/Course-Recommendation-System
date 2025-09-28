@@ -72,15 +72,19 @@ def get_enrollment_trends():
     results = db.session.query(
         Course.department,
         func.count(Enrollment.id).label('enrollment_count')
-    ).join(Enrollment).group_by(Course.department).order_by(desc('enrollment_count')).all()
+    ).join(Enrollment).group_by(
+        Course.department
+    ).order_by(
+        desc('enrollment_count')
+    ).all()
 
     # Format data for frontend visualization
-    trend_data = {
-        'departments': [res.department for res in results],
-        'counts': [res.enrollment_count for res in results]
-    }
-    
-    return jsonify({"message": "Enrollment trend data retrieved successfully.", "data": trend_data})
+    trends_list = [
+        {'department': res.department, 'average_enrollment': res.enrollment_count} 
+        for res in results
+    ]
+
+    return jsonify(trends_list)
 
 # ----------------------------------------------------------------------
 # --- 4. Application Runner ---
