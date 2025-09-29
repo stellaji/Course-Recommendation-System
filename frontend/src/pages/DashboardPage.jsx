@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 
 const DashboardPage = () => {
   // 1. Define State for trends data
@@ -38,27 +39,54 @@ const DashboardPage = () => {
   if (error) {
     return <div style={{ padding: '20px', color: 'red' }}>Error: {error}</div>;
   }
+  if (trends.length === 0) {
+    return <div style={{ padding: '20px' }}>No enrollment trend data found in the database.</div>;
+  }
 
   // 4. Render the Trends Data (Simple List)
   return (
     <div style={{ padding: '20px' }}>
       <h1>Enrollment Trends Dashboard</h1>
-      <p>Data fetched successfully from the Flask API!</p>
+      <p>Average Enrollment by Department:</p>
       
-      <h2>Average Enrollment by Department:</h2>
-      <ul style={{ listStyleType: 'none', padding: 0 }}>
-        {trends && Array.isArray(trends) && trends.map((trend, index) => (
-          <li key={index} style={{ padding: '10px', borderBottom: '1px dotted #ccc' }}>
-              <strong>{trend.department}:</strong> {Math.round(trend.average_enrollment)} average students
-          </li>
-        ))}
+      {/* 5. Chart Visualization */}
+      <div style={{ width: '100%', height: 400 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={trends} // Data is the 'trends' array
+            margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            
+            {/* XAxis uses the 'department' key for labels */}
+            <XAxis 
+              dataKey="department" 
+              angle={-45} // Tilt labels to prevent overlap
+              textAnchor="end" 
+              interval={0} 
+              height={70} 
+            /> 
+            
+            {/* YAxis shows the average enrollment count */}
+            <YAxis label={{ value: 'Avg. Enrollment', angle: -90, position: 'insideLeft' }} /> 
+            
+            <Tooltip 
+              formatter={(value) => [`${Math.round(value)} students`, 'Avg. Enrollment']} 
+            />
+            <Legend verticalAlign="top" height={36} />
+            
+            {/* Bar uses 'average_enrollment' for bar height */}
+            <Bar 
+              dataKey="average_enrollment" 
+              fill="#4A70FF" // A nice blue color
+              name="Avg. Enrollment" 
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-        {trends && trends.length === 0 && <p>No trend data was returned from the API.</p>}
-
-      </ul>
-      
       <p style={{ marginTop: '20px', color: '#666' }}>
-        *In the next phase (Phase 4), we will replace this list with charts and data visualizations.
+        *The visualization shows the average enrollment count for each department.
       </p>
     </div>
   );
