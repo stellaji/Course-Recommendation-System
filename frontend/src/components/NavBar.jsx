@@ -13,6 +13,7 @@ const Navbar = () => {
       <Link to="/" style={linkStyle}>Home</Link>
       <Link to="/catalog" style={linkStyle}>Course Catalog</Link>
       <Link to="/dashboard" style={linkStyle}>Trends Dashboard</Link>
+      <Link to="/recommendations">My Recommendations</Link> 
     </nav>
   );
 };
