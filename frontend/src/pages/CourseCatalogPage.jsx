@@ -45,7 +45,6 @@ const CourseCatalogPage = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Course Catalog ({courses.length} Courses Found)</h1>
-      <p>Data fetched successfully from the Flask API!</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
         {courses.map((course) => (
