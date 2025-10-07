@@ -1,68 +1,61 @@
-# create_test_data.py - Realistic Dataset Generator
+# create_test_data.py - Data Loader with REAL UCSD Course Titles
 
-from app import db, app, User, Course, Enrollment # Import models and app from app.py
+from app import db, app, User, Course, Enrollment 
 from random import choice, randint, sample
 
-# --- 1. Realistic User and Course Data ---
+# --- 1. Real Course Data for Key Departments ---
+# Data gathered from the UCSD catalog to ensure realistic course titles and numbers
 
-# A list of user names and a wider variety of realistic majors/departments
-TEST_USERS = [
-    ('Alice', 'CSE'), ('Bob', 'CSE'), ('Charlie', 'MATH'), ('David', 'ECE'), 
-    ('Eve', 'CSE'), ('Frank', 'MATH'), ('Grace', 'POLI'), ('Heidi', 'CSE'), 
-    ('Ivan', 'ECON'), ('Judy', 'BILD'), ('Kevin', 'PSYC'), ('Laura', 'HIST'),
-    ('Mike', 'COGS'), ('Nina', 'PSYC'), ('Oscar', 'POLI'), ('Pam', 'MATH'),
-    ('Quinn', 'CSE'), ('Rita', 'ECON'), ('Sam', 'BILD'), ('Tina', 'ECE')
-]
-
-# Comprehensive list of departments and course titles (with more courses per dept)
-COURSE_DEPT_TITLES = {
+REAL_COURSE_DATA = {
     'CSE': [
-        'Intro to Programming (CSE 101)', 'Data Structures (CSE 103)', 'Algorithms (CSE 109)', 
-        'Web Development (CSE 110)', 'Databases (CSE 111)', 'Computer Architecture (CSE 141)'
+        (3, 'Fluency in Information Technology'), (4, 'Introduction to Computer Science'),
+        ('6GS', 'Introduction to Computer Science (General Science)'), ('8A', 'Introduction to Computer Science: Java'),
+        ('8B', 'Introduction to Computer Science: C++'), (11, 'Introduction to Computer Science and Object-Oriented Programming'),
+        (12, 'Basic Data Structures and Object-Oriented Design'), ('15L', 'Software Tools and Techniques Laboratory'),
+        (20, 'Discrete Mathematics'), (21, 'Mathematics for Algorithms and Systems'),
+        (30, 'Computer Organization and Systems Programming'), (91, 'CSE Honors Seminar'),
+        (100, 'Advanced Data Structures'), (101, 'Design and Analysis of Algorithms'),
+        (105, 'Theory of Computability'), (107, 'Introduction to Cryptography'),
+        (110, 'Software Engineering'), (120, 'Principles of Operating Systems'),
+        (130, 'Programming Languages: Principles and Paradigms'), (131, 'Compiler Construction'),
+        (140, 'Components and Design Techniques for Digital Systems'), (150, 'Introduction to Artificial Intelligence'),
+        (151, 'Artificial Intelligence: Representation and Search'), (167, 'Computer Graphics'),
+        (180, 'Database System Principles'), (190, 'Topics in Computer Science and Engineering')
     ],
     'MATH': [
-        'Calculus I (MATH 10A)', 'Linear Algebra (MATH 20D)', 'Abstract Algebra (MATH 103)', 
-        'Probability & Stats (MATH 183)', 'Differential Equations (MATH 120)'
-    ],
-    'POLI': [
-        'Intro to IR', 'American Politics', 'Comparative Government', 
-        'Political Theory', 'Public Policy Analysis'
+        ('10A', 'Calculus I'), ('10B', 'Calculus II'), ('10C', 'Calculus III'),
+        (11, 'Introduction to Linear Algebra'), ('20A', 'Calculus for Science and Engineering I'),
+        ('20B', 'Calculus for Science and Engineering II'), (100, 'Abstract Algebra I'),
+        (102, 'Applied Linear Algebra'), ('140A', 'Foundations of Real Analysis'),
+        ('180A', 'Introduction to Probability'), (190, 'Introduction to Topology')
     ],
     'ECON': [
-        'Microeconomics (E1A)', 'Macroeconomics (E3A)', 'Econometrics (E120A)', 
-        'Game Theory', 'Public Finance'
+        (1, 'Principles of Microeconomics'), (2, 'Principles of Macroeconomics'),
+        ('100A', 'Microeconomics A'), ('100B', 'Microeconomics B'), ('110A', 'Macroeconomics A'),
+        ('120A', 'Econometrics A'), (130, 'Labor Economics'), (140, 'International Trade'),
+        (170, 'Game Theory')
     ],
-    'ECE': [
-        'Circuits (E35)', 'Digital Design (E45)', 'Signal Processing (E101)', 
-        'Microcontrollers (E111)', 'Electromagnetics (E130)'
-    ],
-    'BILD': [
-        'Cell Biology', 'Genetics', 'Evolution', 'Ecology', 'Immunology'
-    ],
-    'PSYC': [
-        'Intro to Psychology (P1)', 'Social Psychology (P104)', 'Developmental Psych (P106)', 
-        'Abnormal Psych (P110)', 'Cognitive Neuroscience (P130)'
-    ],
-    'HIST': [
-        'World History (H1)', 'US History (H2)', 'European History (H3)', 
-        'History of Science', 'Ancient Greece and Rome'
-    ],
-    'COGS': [
-        'Intro to Cognitive Science (CG1)', 'Human Cognition (CG101)', 
-        'AI and Philosophy (CG121)', 'Data Science in CogSci (CG180)', 
-        'Cognitive Modeling (CG170)'
+    'POLI': [
+        (10, 'Introduction to Political Science: American Politics'), (11, 'Introduction to Political Science: Comparative Politics'),
+        (12, 'Introduction to Political Science: International Relations'),
+        ('100A', 'The Politics of Globalization'), ('120A', 'Political Science: Data Analytics'),
+        ('142A', 'The Politics of the European Union'), ('160A', 'International Political Economy')
     ]
 }
 
-# --- 2. Data Generation Logic (Modified) ---
+# Consolidate all departments we want data for
+ALL_DEPARTMENTS = list(REAL_COURSE_DATA.keys()) 
+# Add other departments for user diversity, even if their data is generic
+ALL_DEPARTMENTS.extend(['BENG', 'BILD', 'CHEM', 'ECE', 'MUS', 'PSYC', 'SOC', 'VIS'])
+
+# --- 2. User Setup (100 users for strong recommendations) ---
+TEST_USERS = [(f'User_{i}', choice(ALL_DEPARTMENTS)) for i in range(100)] 
 
 def create_initial_data():
-    """Drops tables, creates tables, and populates with a diverse set of users and enrollments."""
+    """Drops tables, creates tables, and populates with a large, realistic dataset."""
     with app.app_context():
-        # Drop and recreate all tables
         db.drop_all()
         db.create_all()
-        
         print("Database tables created/recreated.")
 
         # --- 1. Create Users ---
@@ -74,44 +67,70 @@ def create_initial_data():
         db.session.commit()
         print(f"Created {len(user_objects)} test users.")
         
-        # --- 2. Create Courses ---
+        # --- 2. Create Courses (Using real data where available) ---
         course_objects = []
-        for dept, titles in COURSE_DEPT_TITLES.items():
-            for title in titles:
-                # Use a slightly more complex title to create unique courses
-                course = Course(
-                    title=f'{dept}: {title}',
-                    department=dept,
-                    description=f'An essential course in the field of {dept}.',
-                    credits=4
-                )
-                db.session.add(course)
-                course_objects.append(course)
-        db.session.commit()
-        print(f"Created {len(course_objects)} test courses.")
+        course_id_counter = 1
         
-        # --- 3. Create Enrollments (Crucial for Recommender) ---
+        for dept in ALL_DEPARTMENTS:
+            if dept in REAL_COURSE_DATA:
+                # Use REAL course data
+                for number, title in REAL_COURSE_DATA[dept]:
+                    # Format title to include department and number, e.g., "CSE 12: Basic Data Structures..."
+                    full_title = f'{dept} {number}: {title}'
+                    course = Course(
+                        id=course_id_counter,
+                        title=full_title,
+                        department=dept,
+                        description=f'Official catalog description for {full_title}.',
+                        credits=4
+                    )
+                    db.session.add(course)
+                    course_objects.append(course)
+                    course_id_counter += 1
+            else:
+                # Use generic mock data for non-key departments
+                for i in range(1, randint(10, 15)):
+                    number = choice([i, i + 100])
+                    full_title = f'{dept} {number}: General Topic {i}'
+                    course = Course(
+                        id=course_id_counter,
+                        title=full_title,
+                        department=dept,
+                        description=f'Mock description for {full_title}.',
+                        credits=4
+                    )
+                    db.session.add(course)
+                    course_objects.append(course)
+                    course_id_counter += 1
+                
+        db.session.commit()
+        print(f"Created {len(course_objects)} comprehensive test courses.")
+        
+        # --- 3. Create Enrollments (Essential for the Recommender) ---
         all_course_ids = [c.id for c in course_objects]
         enrollment_count = 0
+        
+        courses_by_dept = {}
+        for c in course_objects:
+            courses_by_dept.setdefault(c.department, []).append(c.id)
 
-        # Create focused enrollments to ensure majors take classes in their field
         for user in user_objects:
-            # 1. Ensure user enrolls in a few courses from their major
-            major_courses = [c.id for c in course_objects if c.department == user.major]
-            num_major_courses = randint(2, 4)
+            major_dept = user.major
+            major_courses_pool = courses_by_dept.get(major_dept, [])
             
-            # Select unique major courses
-            enrolled_in_major = sample(major_courses, min(len(major_courses), num_major_courses))
+            # Ensure user enrolls heavily in their major
+            num_major_courses = randint(8, 12)
+            # Handle case where dept pool is smaller than requested courses
+            if major_courses_pool:
+                enrolled_in_major = sample(major_courses_pool, min(len(major_courses_pool), num_major_courses))
+            else:
+                enrolled_in_major = []
 
-            # 2. Add some random electives from other departments
-            num_electives = randint(1, 3)
-            # Find non-major courses
-            elective_pool = [c_id for c_id in all_course_ids if c_id not in major_courses]
-            
-            # Select random electives
+            # Add random electives
+            elective_pool = [c_id for c_id in all_course_ids if c_id not in enrolled_in_major]
+            num_electives = randint(3, 5)
             enrolled_in_electives = sample(elective_pool, min(len(elective_pool), num_electives))
             
-            # Combine unique courses
             enrolled_courses = list(set(enrolled_in_major + enrolled_in_electives))
             
             for course_id in enrolled_courses:
@@ -119,13 +138,13 @@ def create_initial_data():
                     user_id=user.id,
                     course_id=course_id,
                     semester=choice(['Fall 2024', 'Spring 2025', 'Winter 2025']),
-                    grade=choice(['A', 'B', 'C', None])
+                    grade=choice(['A', 'B', 'C', 'P'])
                 )
                 db.session.add(enrollment)
                 enrollment_count += 1
         
         db.session.commit()
-        print(f"Created {enrollment_count} total enrollments with major focus.")
+        print(f"Created {enrollment_count} total comprehensive enrollments.")
 
 if __name__ == '__main__':
     create_initial_data()
