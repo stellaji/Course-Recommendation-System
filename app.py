@@ -27,7 +27,7 @@ class User(db.Model):
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
+    title = db.Column(db.String(500), nullable=False)
     department = db.Column(db.String(20), nullable=False)
     description = db.Column(db.Text)
     credits = db.Column(db.Integer)
