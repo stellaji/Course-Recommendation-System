@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+
+const BACKEND_URL = "http://localhost:5000"
 
 // --- Map of abbreviations to full names for display ---
 const DEPT_NAMES_MAP = {
@@ -118,31 +121,41 @@ const RecommendationsPage = () => {
     setRecommendations(null); 
     setError(null);
     
-    // Use user ID 1 for submission, as that's the only predictable user in our mock data
-    const MOCK_USER_ID = 1; 
+    if (selectedCourses.length < 2) {
+      setError("Please select at least two courses taken to generate recommendations.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/recommendations/${MOCK_USER_ID}`, {
-        method: 'GET', // Changed to GET as per your backend structure for a known user ID
+      // --- CRITICAL CHANGE: Use POST method and the /api/recommend endpoint ---
+      const response = await fetch(`${BACKEND_URL}/api/recommend`, {
+        method: 'POST', // <-- Must be POST
         headers: {
           'Content-Type': 'application/json',
         },
-        // We no longer pass the full form body, as the collaborative filter only needs the user ID.
-        // If we were implementing content-based or hybrid, we would use a POST and pass the data.
+        // --- Send the list of selected course IDs in the body ---
+        body: JSON.stringify({ 
+            taken_course_ids: selectedCourses // <-- Key required by app.py
+        }), 
       });
 
       const result = await response.json();
       
-      if (!response.ok || !result.courses || result.courses.length === 0) {
-        throw new Error(result.message || "Could not generate recommendations. Try selecting a user with more enrollments in the mock data.");
+      if (!response.ok) {
+        // If the backend returns a 400 or other non-OK status
+        throw new Error(result.message || "Recommendation fetch failed due to a server error.");
       }
       
-      // Filter recommendations based on courses the user has already selected/taken
-      const finalRecommendations = result.courses.filter(
-        course => !selectedCourses.includes(course.id)
-      ).slice(0, 4); // Show the top 4 remaining recommendations
+      // If result.courses is empty (e.g., if the algorithm finds no matches)
+      if (!result.courses || result.courses.length === 0) {
+        throw new Error(result.message || "No specific recommendations found. Try selecting different courses.");
+      }
+      
+      // No need to filter by selected courses here, as the backend algorithm should handle it.
+      // But we will take the top 4 if the backend sends more.
+      setRecommendations(result.courses.slice(0, 4));
 
-      setRecommendations(finalRecommendations);
     } catch (err) {
       console.error("Recommendation submission error:", err);
       setError(err.message);
@@ -158,120 +171,143 @@ const RecommendationsPage = () => {
   
   // --- RENDER COMPONENT ---
   return (
-    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-      <h1>Get Personalized Recommendations</h1>
-      <p>Select the courses you have already taken and provide your details to receive 4 suggested courses for the next quarter.</p>
+    <Container className="my-5" style={{ maxWidth: '1000px' }}>
+      <h1 className="text-center mb-3">Get Personalized Recommendations</h1>
+      <p className="text-center lead text-muted">
+        Select the courses you have already taken and provide your details to receive 4 suggested courses for the next quarter.
+      </p>
       
-      <p style={{marginTop: '-10px', fontSize: '0.9em', color: '#666'}}>
+      <p className="text-center mb-4" style={{ fontSize: '0.9em', color: '#666' }}>
         Reference the official 
         <a href="https://catalog.ucsd.edu/front/courses.html" target="_blank" rel="noopener noreferrer" style={{marginLeft: '5px', color: '#4A70FF'}}>UCSD Course Catalog</a> 
         &nbsp;for course details.
       </p>
 
-      {/* 4. RECOMMENDATION RESULTS DISPLAY */}
+      {/* 2. RECOMMENDATION RESULTS DISPLAY */}
       {recommendations && (
-        <div style={{ border: '2px solid #4A70FF', padding: '20px', margin: '20px 0', borderRadius: '8px', background: '#F5F8FF' }}>
-          <h2 style={{ color: '#4A70FF' }}>Your Top {recommendations.length} Recommended Courses:</h2>
-          {recommendations.map(course => (
-            <div key={course.id} style={{ marginBottom: '10px', borderBottom: '1px dotted #ccc' }}>
-              <h3 style={{ margin: '5px 0', fontSize: '1.1em' }}>
-                {course.title} 
-                <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.9em', marginLeft: '10px' }}>
-                    ({DEPT_NAMES_MAP[course.department] || course.department})
-                </span>
-              </h3>
-            </div>
-          ))}
-          <button onClick={() => setRecommendations(null)} style={{ marginTop: '15px' }}>
+        <div className="p-4 mb-4 border rounded shadow-sm" style={{ borderColor: '#4A70FF', background: '#f8f9fa' }}>
+          <h2 className="text-success mb-3" style={{ fontSize: '1.5em' }}>
+            ✅ Your Top {recommendations.length} Recommended Courses:
+          </h2>
+          <ul className="list-unstyled">
+            {recommendations.map(course => (
+              <li key={course.id} className="mb-2 pb-2" style={{ borderBottom: '1px dotted #ccc' }}>
+                <h3 style={{ margin: '5px 0', fontSize: '1.1em' }}>
+                    <strong>{course.title}</strong>
+                    <span className="text-muted" style={{ fontWeight: 'normal', fontSize: '0.9em', marginLeft: '10px' }}>
+                        ({DEPT_NAMES_MAP[course.department] || course.department})
+                    </span>
+                </h3>
+                <p className="text-muted small mb-0">{course.description.substring(0, 150)}...</p>
+              </li>
+            ))}
+          </ul>
+          {/* Use the Bootstrap Button component */}
+          <Button variant="outline-secondary" size="sm" onClick={() => setRecommendations(null)} className="mt-3">
             Modify Input
-          </button>
+          </Button>
         </div>
       )}
       
-      {/* 5. INPUT FORM */}
+      {/* 3. INPUT FORM */}
       {!recommendations && (
-        <form onSubmit={handleSubmit}>
-          {/* USER INFO DROPDOWNS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
-            <label>Major:
-              <select value={major} onChange={e => setMajor(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }}>
-                {majors.map(m => <option key={m} value={m}>{DEPT_NAMES_MAP[m] ? `${m} (${DEPT_NAMES_MAP[m]})` : m}</option>)}
-              </select>
-            </label>
-            <label>College:
-              <select value={college} onChange={e => setCollege(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }}>
-                {colleges.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-            <label>Year:
-              <select value={year} onChange={e => setYear(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }}>
-                {years.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </label>
-          </div>
+        // Replace <form> with the Form component and add styling classes
+        <Form onSubmit={handleSubmit} className="p-4 border rounded shadow">
+          
+          {/* USER INFO DROPDOWNS: Use Row and Col for a responsive grid */}
+          <Row className="mb-4">
+            {/* Major */}
+            <Col md={4}>
+              <Form.Group controlId="formMajor">
+                <Form.Label>Major:</Form.Label>
+                <Form.Select value={major} onChange={e => setMajor(e.target.value)}>
+                  {majors.map(m => <option key={m} value={m}>{DEPT_NAMES_MAP[m] ? `${m} (${DEPT_NAMES_MAP[m]})` : m}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            
+            {/* College */}
+            <Col md={4}>
+              <Form.Group controlId="formCollege">
+                <Form.Label>College:</Form.Label>
+                <Form.Select value={college} onChange={e => setCollege(e.target.value)}>
+                  {colleges.map(c => <option key={c} value={c}>{c}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            
+            {/* Year */}
+            <Col md={4}>
+              <Form.Group controlId="formYear">
+                <Form.Label>Year:</Form.Label>
+                <Form.Select value={year} onChange={e => setYear(e.target.value)}>
+                  {years.map(y => <option key={y} value={y}>{y}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
 
           {/* COURSE SELECTION: DEPARTMENT FILTER */}
-          <h2 style={{marginBottom: '10px'}}>Courses Already Taken ({selectedCourses.length} Selected)</h2>
+          <h2 className="mb-3" style={{ fontSize: '1.5em' }}>
+            Courses Already Taken ({selectedCourses.length} Selected)
+          </h2>
 
-          <label>Filter by Department:
-            <select 
+          <Form.Group controlId="formDepartmentFilter" className="mb-3">
+            <Form.Label>Filter by Department:</Form.Label>
+            <Form.Select 
               value={activeDepartment} 
               onChange={e => setActiveDepartment(e.target.value)} 
-              style={{ width: '100%', padding: '8px', marginBottom: '15px' }}
             >
               {allDepartments.map(dept => (
                 <option key={dept} value={dept}>
                   {DEPT_NAMES_MAP[dept] ? `${dept} (${DEPT_NAMES_MAP[dept]})` : dept}
                 </option>
               ))}
-            </select>
-          </label>
+            </Form.Select>
+          </Form.Group>
           
           {/* COURSE LIST (Filtered and Sorted) */}
-          <div style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
+          {/* Use Bootstrap classes for the scrollable list */}
+          <div className="list-group" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', borderRadius: '5px' }}>
             {filteredCourses.map(course => (
               <div 
                 key={course.id} 
-                style={{ 
-                  padding: '5px', 
-                  borderBottom: '1px dotted #eee', 
-                  cursor: 'pointer',
-                  background: selectedCourses.includes(course.id) ? '#e6f0ff' : 'transparent' 
-                }}
+                // Use list-group-item and active class for styling
+                className={`list-group-item list-group-item-action ${selectedCourses.includes(course.id) ? 'active' : ''}`}
                 onClick={() => handleCourseToggle(course.id)}
+                style={{ cursor: 'pointer' }}
               >
-                <input 
-                  type="checkbox" 
-                  checked={selectedCourses.includes(course.id)} 
-                  readOnly 
-                  style={{ marginRight: '10px' }} 
+                {/* Use Form.Check for a clean look inside the list item */}
+                <Form.Check 
+                    type="checkbox" 
+                    label={course.title}
+                    checked={selectedCourses.includes(course.id)} 
+                    readOnly 
+                    // Prevent the click on the checkbox from double-triggering the toggle
+                    style={{pointerEvents: 'none'}}
                 />
-                {course.title}
               </div>
             ))}
             {filteredCourses.length === 0 && activeDepartment && (
-                <p style={{padding: '10px', color: '#999'}}>No courses found for the selected department in the current catalog.</p>
+                <p className="text-center text-muted p-3">No courses found for the selected department in the current catalog.</p>
             )}
           </div>
 
           {/* SUBMIT BUTTON */}
-          <button 
+          <Button 
             type="submit" 
+            variant="primary" // Primary color button
+            size="lg" // Large button
             disabled={isSubmitting || selectedCourses.length < 2} 
-            style={{ 
-              marginTop: '20px', 
-              padding: '10px 20px', 
-              fontSize: '1em', 
-              cursor: isSubmitting || selectedCourses.length < 2 ? 'not-allowed' : 'pointer'
-            }}
+            className="w-100 mt-4" // Full width
           >
             {isSubmitting ? 'Generating...' : `Get 4 Course Recommendations`}
-          </button>
+          </Button>
           
-          {error && <p style={{ color: 'red', marginTop: '10px' }}>Error: {error}</p>}
-        </form>
+          {error && <p className="text-danger mt-3">Error: {error}</p>}
+        </Form>
       )}
-    </div>
+    </Container>
   );
 };
 

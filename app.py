@@ -12,7 +12,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-CORS(app)  # Allows React frontend to communicate with API
+CORS(app, origins=[
+    # Allow the local development server
+    "http://localhost:5173", 
+    
+    # Allow public ngrok hostname
+    "https://rosalie-stringy-superthankfully.ngrok-free.dev" 
+])
 
 # ----------------------------------------------------------------------
 # --- 2. Database Models (Define Table Structure) ---
@@ -90,6 +96,7 @@ def get_enrollment_trends():
 
 # app.py (After get_enrollment_trends)
 
+@app.route('/api/recommendations/<int:user_id>', methods=['GET', 'OPTIONS'])
 def generate_recommendations_for_input(taken_course_ids, num_recommendations=4):
     """
     Core logic modified to generate recommendations based on a list of input course IDs 

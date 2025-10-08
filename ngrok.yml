@@ -1,0 +1,12 @@
+# ngrok.yml
+version: "2"
+authtoken: "33l7jthPaKaxl44PXqeWgNIaeRg_2kVvnhtDCVCmsiV69Bnbc" # Replace with your actual token
+tunnels:
+  frontend:
+    proto: http
+    addr: 5173 # React frontend
+    host_header: rewrite
+  backend:
+    proto: http
+    addr: 5000 # Flask backend
+    host_header: rewrite
