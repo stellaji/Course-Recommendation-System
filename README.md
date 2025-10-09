@@ -1,4 +1,4 @@
-_**Course Recommendation System**_
+Course Recommendation System
 Hello! This is a full-stack, data-intensive application designed to generate personalized course recommendations for UCSD students based on their selected major, college, year, and previous course enrollment.
 
 The system utilizes a Collaborative Filtering algorithm implemented in Python to analyze a synthetic dataset of course enrollment and suggest the top 4 courses that align with a user's academic history.
@@ -65,17 +65,3 @@ Step 4: Access the Application
 Once both servers are running, open your browser and navigate to:
 
 http://localhost:5173/recommendations
-
-⚙️ Project Structure
-.
-├── app.py                      # Flask Backend, API routes, SQLAlchemy models, and ML logic
-├── frontend/
-│   ├── index.html              # Main HTML entry point
-│   ├── src/
-│   │   ├── App.jsx             # Main React component
-│   │   ├── RecommendationsPage.jsx # Core application logic and UI
-│   │   └── main.jsx            # Entry file (where Bootstrap CSS is imported)
-│   ├── package.json            # Node dependencies (React, Bootstrap)
-│   └── vite.config.js          # Vite config (for dev server)
-├── README.md                   # This file
-└── requirements.txt            # Python dependencies
