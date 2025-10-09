@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import CatalogPage from './pages/CourseCatalogPage';
-import DashboardPage from './pages/DashboardPage';
-import Navbar from './components/Navbar'; // 
+import HomePage from './pages/HomePage.jsx';
+import CatalogPage from './pages/CourseCatalogPage.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
+import Navbar from './components/Navbar.jsx'; // 
 import RecommendationsPage from './pages/RecommendationsPage.jsx'; 
 import './App.css'; // Assuming CSS
 
@@ -12,7 +12,7 @@ function App() {
       {/* Navbar will appear on all pages */}
       <Navbar /> 
       
-      <div className="container">
+      <div className="container-fluid p-0">
         <Routes>
           {/* Main application routes */}
           <Route path="/" element={<HomePage />} />

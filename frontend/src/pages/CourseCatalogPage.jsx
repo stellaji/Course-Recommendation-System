@@ -19,7 +19,7 @@ const CourseCatalogPage = () => {
         }
         
         const data = await response.json();
-        setCourses(data); // Store the fetched array of courses
+        setCourses(data); // Store array of courses
         
       } catch (err) {
         console.error("Fetching error:", err);
@@ -34,29 +34,21 @@ const CourseCatalogPage = () => {
 
   // 3. Render Logic: Display status messages
   if (isLoading) {
-    return <div style={{ padding: '20px' }}>Loading course catalog...</div>;
+    return <div style={{ padding: '20px' }}>Loading course catalog information...</div>;
   }
 
   if (error) {
     return <div style={{ padding: '20px', color: 'red' }}>Error: {error}</div>;
   }
 
-  // 4. Render Logic: Display the courses
+  // 4. Render Logic: Display courses
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Course Catalog ({courses.length} Courses Found)</h1>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-        {courses.map((course) => (
-          <div key={course.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '5px' }}>
-            <h2>{course.title}</h2>
-            <p><strong>Department:</strong> {course.department}</p>
-            <p><strong>Credits:</strong> {course.credits}</p>
-            {/* Displaying enrollment data from the backend is optional here */}
-            {course.enrollment && <p><strong>Enrollment:</strong> {course.enrollment}</p>}
-          </div>
-        ))}
-      </div>
+      <p className="text-center mb-4" style={{ fontSize: '0.9em', color: '#666' }}>
+        Welcome! Please reference the official 
+        <a href="https://catalog.ucsd.edu/front/courses.html" target="_blank" rel="noopener noreferrer" style={{marginLeft: '5px', color: '#4A70FF'}}>UCSD Course Catalog</a> 
+        &nbsp;for course details.
+      </p>
     </div>
   );
 };

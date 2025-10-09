@@ -171,16 +171,10 @@ const RecommendationsPage = () => {
   
   // --- RENDER COMPONENT ---
   return (
-    <Container className="my-5" style={{ maxWidth: '1000px' }}>
+    <Container fluid className="my-5" style={{ maxWidth: '1000px' }}>
       <h1 className="text-center mb-3">Get Personalized Recommendations</h1>
       <p className="text-center lead text-muted">
         Select the courses you have already taken and provide your details to receive 4 suggested courses for the next quarter.
-      </p>
-      
-      <p className="text-center mb-4" style={{ fontSize: '0.9em', color: '#666' }}>
-        Reference the official 
-        <a href="https://catalog.ucsd.edu/front/courses.html" target="_blank" rel="noopener noreferrer" style={{marginLeft: '5px', color: '#4A70FF'}}>UCSD Course Catalog</a> 
-        &nbsp;for course details.
       </p>
 
       {/* 2. RECOMMENDATION RESULTS DISPLAY */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Container } from 'react-bootstrap'; 
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 
 const DashboardPage = () => {
@@ -33,24 +34,36 @@ const DashboardPage = () => {
 
   // 3. Render Status Checks
   if (isLoading) {
-    return <div style={{ padding: '20px' }}>Loading enrollment trends...</div>;
+    return (
+        <Container fluid className="my-5"> 
+            <div style={{ padding: '20px' }}>Loading enrollment trends...</div>
+        </Container>
+    );
   }
 
   if (error) {
-    return <div style={{ padding: '20px', color: 'red' }}>Error: {error}</div>;
+    return (
+        <Container fluid className="my-5">
+            <div style={{ padding: '20px', color: 'red' }}>Error: {error}</div>
+        </Container>
+    );
   }
   if (trends.length === 0) {
-    return <div style={{ padding: '20px' }}>No enrollment trend data found in the database.</div>;
+    return (
+      <Container fluid className="my-5">
+        <div style={{ padding: '20px' }}>No enrollment trend data found in the database.</div>;
+      </Container>
+    );
   }
 
   // 4. Render the Trends Data (Simple List)
   return (
-    <div style={{ padding: '20px' }}>
+    <Container fluid className="my-5 px-md-5">
       <h1>Enrollment Trends Dashboard</h1>
       <p>Average Enrollment by Department:</p>
       
       {/* 5. Chart Visualization */}
-      <div style={{ width: '100%', height: 400 }}>
+      <div style={{ width: '100%', height: 500 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={trends} // Data is the 'trends' array
@@ -88,7 +101,7 @@ const DashboardPage = () => {
       <p style={{ marginTop: '20px', color: '#666' }}>
         *The visualization shows the average enrollment count for each department.
       </p>
-    </div>
+    </Container>
   );
 };
 
