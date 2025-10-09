@@ -1,4 +1,5 @@
 Course Recommendation System
+
 Hello! This is a full-stack, data-intensive application designed to generate personalized course recommendations for UCSD students based on their selected major, college, year, and previous course enrollment.
 
 The system utilizes a Collaborative Filtering algorithm implemented in Python to analyze a synthetic dataset of course enrollment and suggest the top 4 courses that align with a user's academic history.
