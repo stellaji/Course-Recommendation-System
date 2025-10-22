@@ -38,7 +38,7 @@ const RecommendationsPage = () => {
 
   // Helper data for dropdowns
   const majors = Object.keys(DEPT_NAMES_MAP).sort(); 
-  const colleges = ['Revelle', 'Marshall', 'Muir', 'Warren', 'Roosevelt', 'Sixth', 'Seventh'];
+  const colleges = ['Revelle', 'Marshall', 'Muir', 'Warren', 'Roosevelt', 'Sixth', 'Seventh', 'Eighth'];
   const years = ['Freshman', 'Sophomore', 'Junior', 'Senior'];
 
   // --- EFFECT: Fetch the Course Catalog on load ---
